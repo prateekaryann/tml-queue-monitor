@@ -1,0 +1,55 @@
+name: TML Queue Monitor
+
+on:
+  schedule:
+    - cron: '*/2 * * * *'   # Every 2 minutes
+  workflow_dispatch:          # Manual trigger from GitHub UI
+
+jobs:
+  check-queue:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      # Restore previous state (so we know if status changed)
+      - name: Restore state
+        uses: actions/cache/restore@v4
+        with:
+          path: state.json
+          key: tml-queue-state
+
+      # Run the monitor
+      - name: Check queue status
+        env:
+          USERS: ${{ secrets.USERS }}
+          SMTP_EMAIL: ${{ secrets.SMTP_EMAIL }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python monitor.py
+
+      # Save state for next run (always, even if monitor fails)
+      # Delete old cache first (keys are immutable)
+      - name: Delete old state cache
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh cache delete tml-queue-state --repo ${{ github.repository }} 2>/dev/null || true
+
+      - name: Save state
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: state.json
+          key: tml-queue-state
