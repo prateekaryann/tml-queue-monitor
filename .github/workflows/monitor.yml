@@ -5,10 +5,13 @@ on:
     - cron: '*/2 * * * *'   # Every 2 minutes
   workflow_dispatch:          # Manual trigger from GitHub UI
 
+permissions:
+  contents: write
+
 jobs:
   check-queue:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -53,3 +56,48 @@ jobs:
         with:
           path: state.json
           key: tml-queue-state
+
+      # Publish status to dashboard (gh-pages)
+      - name: Generate dashboard status
+        if: always()
+        run: |
+          python3 << 'PYEOF'
+          import json, os
+          from datetime import datetime, timezone
+          try:
+              with open('state.json', 'r') as f:
+                  state = json.load(f)
+          except:
+              state = {'users': {}, 'system_healthy': False, 'last_run': None}
+
+          dashboard = {
+              'generated_at': datetime.now(timezone.utc).isoformat(),
+              'last_run': state.get('last_run'),
+              'system_healthy': state.get('system_healthy', False),
+              'users': {}
+          }
+          for uid, udata in state.get('users', {}).items():
+              email = udata.get('email', '?')
+              parts = email.split('@')
+              masked = parts[0][:3] + '***@' + parts[-1] if '@' in email else email
+              dashboard['users'][uid[:8]] = {
+                  'email': masked,
+                  'status': udata.get('status', 'unknown'),
+                  'last_checked': udata.get('last_checked', ''),
+                  'full_response': udata.get('full_response', {}),
+              }
+
+          os.makedirs('_dashboard_publish/data', exist_ok=True)
+          with open('_dashboard_publish/data/status.json', 'w') as f:
+              json.dump(dashboard, f, indent=2)
+          print(f"  Dashboard status generated: {len(dashboard['users'])} users")
+          PYEOF
+
+      - name: Deploy status to gh-pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_dashboard_publish
+          keep_files: true
+          publish_branch: gh-pages
