@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TML Queue Monitor</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-icon">T</span>
+      <span class="brand-text">TML Monitor</span>
+    </div>
+    <a href="#dashboard" class="nav-item active" data-panel="dashboard">
+      <span class="nav-icon">&#9632;</span> Dashboard
+    </a>
+    <a href="#controls" class="nav-item" data-panel="controls">
+      <span class="nav-icon">&#9654;</span> Controls
+    </a>
+    <a href="#logs" class="nav-item" data-panel="logs">
+      <span class="nav-icon">&#9776;</span> Logs
+    </a>
+    <a href="#settings" class="nav-item" data-panel="settings">
+      <span class="nav-icon">&#9881;</span> Settings
+    </a>
+    <div class="sidebar-footer">
+      <div id="connection-status" class="conn-badge disconnected">No PAT</div>
+    </div>
+  </nav>
+
+  <main class="content">
+    <!-- Dashboard -->
+    <section id="panel-dashboard" class="panel active">
+      <div class="panel-header">
+        <h1>Dashboard</h1>
+        <div class="header-actions">
+          <span id="last-update" class="meta-text"></span>
+          <button class="btn btn-sm" onclick="Dashboard.refresh()">Refresh</button>
+        </div>
+      </div>
+      <div id="system-health" class="health-bar"></div>
+      <div id="user-cards" class="card-grid"></div>
+      <div id="dashboard-empty" class="empty-state" style="display:none">
+        <p>No status data yet. Waiting for first monitor run...</p>
+      </div>
+    </section>
+
+    <!-- Controls -->
+    <section id="panel-controls" class="panel">
+      <div class="panel-header">
+        <h1>Controls</h1>
+      </div>
+
+      <div class="control-section">
+        <h2>Manual Check</h2>
+        <p class="help-text">Trigger the queue monitor to run immediately.</p>
+        <button id="btn-trigger" class="btn btn-primary" onclick="Controls.triggerCheck()">
+          Trigger Check Now
+        </button>
+        <div id="trigger-status" class="status-msg"></div>
+      </div>
+
+      <div class="control-section">
+        <h2>Manage Users</h2>
+        <p class="help-text">
+          Add or remove monitored users. Format: <code>uuid:email</code>, one per line.
+          Requires PAT with <code>repo</code> scope.
+        </p>
+        <textarea id="users-input" class="input-field" rows="4" placeholder="uuid1:email1&#10;uuid2:email2"></textarea>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="Controls.saveUsers()">Save Users</button>
+          <button class="btn" onclick="Controls.loadCurrentUsers()">Load Current</button>
+        </div>
+        <div id="users-status" class="status-msg"></div>
+        <p class="help-text" style="margin-top:8px">
+          <em>Note: "Load Current" reads from the latest status.json (masked emails). To see full values, check GitHub Settings.</em>
+        </p>
+      </div>
+    </section>
+
+    <!-- Logs -->
+    <section id="panel-logs" class="panel">
+      <div class="panel-header">
+        <h1>Workflow Runs</h1>
+        <div class="header-actions">
+          <button class="btn btn-sm" onclick="Logs.refresh()">Refresh</button>
+        </div>
+      </div>
+      <div id="runs-table-container">
+        <table class="data-table" id="runs-table">
+          <thead>
+            <tr>
+              <th>Run</th>
+              <th>Status</th>
+              <th>Started</th>
+              <th>Duration</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="runs-body"></tbody>
+        </table>
+      </div>
+      <div id="logs-empty" class="empty-state" style="display:none">
+        <p>Configure a PAT in Settings to view workflow runs.</p>
+      </div>
+    </section>
+
+    <!-- Settings -->
+    <section id="panel-settings" class="panel">
+      <div class="panel-header">
+        <h1>Settings</h1>
+      </div>
+
+      <div class="control-section">
+        <h2>GitHub Personal Access Token</h2>
+        <p class="help-text">
+          Required for Controls and Logs. Create a
+          <a href="https://github.com/settings/tokens?type=beta" target="_blank">fine-grained token</a>
+          with <code>Actions: Read &amp; Write</code> and <code>Secrets: Read &amp; Write</code> permissions for this repo.
+        </p>
+        <div class="input-row">
+          <input type="password" id="pat-input" class="input-field" placeholder="github_pat_...">
+          <button class="btn btn-primary" onclick="Settings.savePat()">Save</button>
+          <button class="btn" onclick="Settings.testPat()">Test</button>
+          <button class="btn btn-danger" onclick="Settings.clearPat()">Clear</button>
+        </div>
+        <div id="pat-status" class="status-msg"></div>
+      </div>
+
+      <div class="control-section">
+        <h2>Repository Secrets</h2>
+        <p class="help-text">Secret values cannot be read via API. Click a secret name to edit it on GitHub.</p>
+        <div id="secrets-list" class="secrets-grid"></div>
+        <div id="secrets-empty" class="empty-state" style="display:none">
+          <p>Configure a PAT to view secret status.</p>
+        </div>
+      </div>
+
+      <div class="control-section">
+        <h2>About</h2>
+        <p class="help-text">
+          Tomorrowland Thailand 2026 Queue Monitor<br>
+          Repo: <a href="https://github.com/prateekaryann/tml-queue-monitor" target="_blank">prateekaryann/tml-queue-monitor</a><br>
+          Checks every 2 minutes via GitHub Actions cron.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="js/github-api.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/controls.js"></script>
+  <script src="js/logs.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
