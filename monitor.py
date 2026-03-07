@@ -33,7 +33,7 @@ import requests
 
 # ─── Config ───
 
-QUEUE_ID = "WD9YMQT37OCGMH15UNTZR"
+QUEUE_ID = "I4JAYM0IHHEK6F2OZ130I"
 IQ_URL = f"https://iq.prod.tomorrowland.com/tickets/{QUEUE_ID}"
 FALLBACK_URL = f"https://fallback.tomorrowland.com/queue.prod.tomorrowland.com/{QUEUE_ID}/fallback.json"
 STATE_FILE = "state.json"
