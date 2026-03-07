@@ -328,6 +328,19 @@ def main():
     print(f"  Summary: {summary}")
     print(f"{'─' * 55}\n")
 
+    # Heartbeat — send Telegram on every run
+    now = datetime.now(timezone.utc).strftime('%H:%M UTC')
+    user_lines = "\n".join(
+        f"  {'⏳' if r['status'] == 'in_queue' else '🚀'} {r['email']} → <b>{r['status']}</b>"
+        for r in results
+    )
+    health = "🟢" if healthy else "🔴"
+    send_telegram(
+        f"🎪 <b>TML Queue Check</b> — {now}\n\n"
+        f"{health} System {'healthy' if healthy else 'degraded'}\n"
+        f"{user_lines}"
+    )
+
 
 if __name__ == "__main__":
     main()
