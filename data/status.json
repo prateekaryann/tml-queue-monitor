@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-03-08T10:36:00.091132+00:00",
-  "last_run": "2026-03-08T10:35:57.787624+00:00",
+  "generated_at": "2026-03-08T10:55:31.266160+00:00",
+  "last_run": "2026-03-08T10:55:29.864800+00:00",
   "system_healthy": true,
   "users": {
     "0a221e94": {
       "email": "pra***@gmail.com",
       "status": "in_queue",
-      "last_checked": "2026-03-08T10:35:57.787605+00:00",
+      "last_checked": "2026-03-08T10:55:29.864778+00:00",
       "full_response": {
         "status": "in_queue"
       }
