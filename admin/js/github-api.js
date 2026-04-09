@@ -56,7 +56,8 @@ const GitHubAPI = (() => {
     }
     if (!resp.ok) {
       const body = await resp.text();
-      throw new Error(`GitHub API ${resp.status}: ${body.slice(0, 200)}`);
+      const safeBody = body.slice(0, 200).replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+      throw new Error(`GitHub API ${resp.status}: ${safeBody}`);
     }
 
     if (resp.status === 204) return null;

@@ -38,21 +38,32 @@ const Dashboard = (() => {
     const empty = document.getElementById('dashboard-empty');
 
     if (!users || Object.keys(users).length === 0) {
-      container.innerHTML = '';
+      container.replaceChildren();
       empty.style.display = 'block';
       return;
     }
     empty.style.display = 'none';
 
-    container.innerHTML = Object.entries(users).map(([uid, u]) => `
-      <div class="user-card">
-        <div class="card-email">${u.email}</div>
-        <div class="card-status ${statusClass(u.status)}">${u.status}</div>
-        <div class="card-meta">
-          ID: ${uid} &middot; Checked: ${timeAgo(u.last_checked)}
-        </div>
-      </div>
-    `).join('');
+    container.innerHTML = '';
+    Object.entries(users).forEach(([uid, u]) => {
+      const card = document.createElement('div');
+      card.className = 'user-card';
+
+      const email = document.createElement('div');
+      email.className = 'card-email';
+      email.textContent = u.email;
+
+      const status = document.createElement('div');
+      status.className = `card-status ${statusClass(u.status)}`;
+      status.textContent = u.status;
+
+      const meta = document.createElement('div');
+      meta.className = 'card-meta';
+      meta.textContent = `ID: ${uid} \u00B7 Checked: ${timeAgo(u.last_checked)}`;
+
+      card.append(email, status, meta);
+      container.appendChild(card);
+    });
   }
 
   async function refresh() {
@@ -65,7 +76,7 @@ const Dashboard = (() => {
     } catch (e) {
       updateEl.textContent = 'Failed to load status';
       document.getElementById('dashboard-empty').style.display = 'block';
-      document.getElementById('user-cards').innerHTML = '';
+      document.getElementById('user-cards').replaceChildren();
     }
   }
 
