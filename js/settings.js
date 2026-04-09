@@ -48,7 +48,7 @@ const Settings = (() => {
     const status = document.getElementById('pat-status');
     status.className = 'status-msg info';
     status.textContent = 'PAT cleared from browser.';
-    document.getElementById('secrets-list').innerHTML = '';
+    document.getElementById('secrets-list').replaceChildren();
     document.getElementById('secrets-empty').style.display = 'block';
   }
 
@@ -73,24 +73,44 @@ const Settings = (() => {
 
       const editBase = `https://github.com/${GitHubAPI.OWNER}/${GitHubAPI.REPO}/settings/secrets/actions`;
 
-      container.innerHTML = EXPECTED_SECRETS.map(name => {
+      container.innerHTML = '';
+      EXPECTED_SECRETS.forEach(name => {
         const exists = secretNames.includes(name);
         const secret = secretMap[name];
         const updated = secret ? new Date(secret.updated_at).toLocaleDateString() : '';
-        return `
-          <div class="secret-item">
-            <div>
-              <a href="${editBase}/${name}" target="_blank" class="secret-name">${name}</a>
-              ${updated ? `<span class="secret-meta"> &middot; updated ${updated}</span>` : ''}
-            </div>
-            <span class="secret-badge ${exists ? 'set' : 'missing'}">
-              ${exists ? 'Set' : 'Not set'}
-            </span>
-          </div>
-        `;
-      }).join('');
+
+        const item = document.createElement('div');
+        item.className = 'secret-item';
+
+        const info = document.createElement('div');
+        const link = document.createElement('a');
+        link.href = `${editBase}/${encodeURIComponent(name)}`;
+        link.target = '_blank';
+        link.className = 'secret-name';
+        link.textContent = name;
+        info.appendChild(link);
+
+        if (updated) {
+          const meta = document.createElement('span');
+          meta.className = 'secret-meta';
+          meta.textContent = ` \u00B7 updated ${updated}`;
+          info.appendChild(meta);
+        }
+
+        const badge = document.createElement('span');
+        badge.className = `secret-badge ${exists ? 'set' : 'missing'}`;
+        badge.textContent = exists ? 'Set' : 'Not set';
+
+        item.append(info, badge);
+        container.appendChild(item);
+      });
     } catch (e) {
-      container.innerHTML = `<div class="empty-state" style="padding:12px;color:var(--red)">${e.message}</div>`;
+      container.innerHTML = '';
+      const errDiv = document.createElement('div');
+      errDiv.className = 'empty-state';
+      errDiv.style.cssText = 'padding:12px;color:var(--red)';
+      errDiv.textContent = e.message;
+      container.appendChild(errDiv);
     }
   }
 
