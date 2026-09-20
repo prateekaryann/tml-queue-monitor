@@ -1,14 +1,15 @@
 {
-  "generated_at": "2026-09-20T11:56:23.018475+00:00",
-  "last_run": "2026-09-20T11:56:21.698248+00:00",
+  "generated_at": "2026-09-20T15:31:08.627263+00:00",
+  "last_run": "2026-09-20T15:31:06.821678+00:00",
   "system_healthy": true,
   "users": {
     "0a221e94": {
       "email": "pra***@gmail.com",
-      "status": "in_queue",
-      "last_checked": "2026-09-20T11:56:21.698227+00:00",
+      "status": "redirect",
+      "last_checked": "2026-09-20T15:31:06.821652+00:00",
       "full_response": {
-        "status": "in_queue"
+        "status": "redirect",
+        "redirect_url": "https://my.tomorrowland.com/event/tomorrowland-thailand-2026"
       }
     }
   }
